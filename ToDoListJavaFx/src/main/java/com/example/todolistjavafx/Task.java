@@ -6,7 +6,7 @@ import java.time.LocalTime;
 public class Task {
     private String description;
     private LocalDate deadline;
-    private LocalTime time; // Добавляем поле времени
+    private LocalTime time;
     private boolean isCompleted;
 
     public Task(String description, LocalDate deadline) {
@@ -23,7 +23,6 @@ public class Task {
         return deadline;
     }
 
-    // Добавляем геттер и сеттер для времени
     public LocalTime getTime() {
         return time;
     }

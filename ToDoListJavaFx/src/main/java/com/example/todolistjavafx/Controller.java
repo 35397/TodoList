@@ -7,21 +7,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.util.Callback;
 
 import java.io.*;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.Scanner;
-import java.util.Arrays;
 
 public class Controller implements Initializable {
 
@@ -34,45 +30,7 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        taskList.setCellFactory(new Callback<>() {
-            @Override
-            public ListCell<Task> call(ListView<Task> param) {
-                return new ListCell<>() {
-                    @Override
-                    protected void updateItem(Task task, boolean empty) {
-                        super.updateItem(task, empty);
-                        if (empty || task == null) {
-                            setText(null);
-                        } else {
-                            StringBuilder stringBuilder = new StringBuilder();
-                            stringBuilder.append(task.getDescription());
-                            LocalDate deadline = task.getDeadline();
-                            if (deadline != null) {
-                                stringBuilder.append(" - ").append(deadline);
-                                LocalTime time = task.getTime();
-                                if (time != null) {
-                                    stringBuilder.append(" ").append(time);
-                                }
-                                long daysUntilDeadline = ChronoUnit.DAYS.between(LocalDate.now(), deadline);
-                                if (daysUntilDeadline <= 0) {
-                                    setStyle("-fx-background-color: lightcoral;");
-                                } else if (daysUntilDeadline <= 3) {
-                                    setStyle("-fx-background-color: yellow;");
-                                } else {
-                                    setStyle("");
-                                }
-                            } else {
-                                setStyle("");
-                            }
-                            if (task.isCompleted()) {
-                                setStyle("-fx-background-color: lightgreen;");
-                            }
-                            setText(stringBuilder.toString());
-                        }
-                    }
-                };
-            }
-        });
+        taskList.setCellFactory(param -> new TaskListCell());
 
         sortChoiceBox.getItems().addAll("Sort by Date", "Sort by Task Name");
         sortChoiceBox.setValue("Sort by Date"); // default selection
@@ -80,6 +38,10 @@ public class Controller implements Initializable {
         // Add listener to sortChoiceBox to sort tasks when the selected option changes
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortTasks());
 
+        loadDataFromFile();
+    }
+
+    private void loadDataFromFile() {
         try (Scanner myReader = new Scanner(data)) {
             while (myReader.hasNextLine()) {
                 String[] taskData = myReader.nextLine().split(";");
@@ -90,7 +52,7 @@ public class Controller implements Initializable {
                     boolean isCompleted = Boolean.parseBoolean(taskData[3]);
 
                     try {
-                        if (!taskData[1].equals("null")) {
+                        if (!"null".equals(taskData[1])) {
                             deadline = LocalDate.parse(taskData[1]);
                         }
                     } catch (DateTimeParseException e) {
@@ -98,7 +60,7 @@ public class Controller implements Initializable {
                     }
 
                     try {
-                        if (!taskData[2].equals("null")) {
+                        if (!"null".equals(taskData[2])) {
                             time = LocalTime.parse(taskData[2]);
                         }
                     } catch (DateTimeParseException e) {
@@ -110,8 +72,7 @@ public class Controller implements Initializable {
                     task.setCompleted(isCompleted);
                     taskList.getItems().add(task);
                 } else {
-                    // Handle invalid data or log an error
-                    System.err.println("Invalid task data: " + Arrays.toString(taskData));
+                    System.err.println("Invalid task data: " + String.join(";", taskData));
                 }
             }
         } catch (FileNotFoundException e) {
@@ -119,11 +80,10 @@ public class Controller implements Initializable {
         }
     }
 
-
     public void addNewTask(ActionEvent e) {
         String text = newTask.getText();
         LocalDate deadline = deadlinePicker.getValue();
-        if (!text.equals("")) {
+        if (!text.isEmpty()) {
             taskList.getItems().add(new Task(text, deadline));
             newTask.setText("");
             deadlinePicker.setValue(null);
@@ -154,17 +114,22 @@ public class Controller implements Initializable {
 
     public void exitProgram(ActionEvent e) {
         System.out.println("Exiting program..");
-        ObservableList<Task> currentTaskList = taskList.getItems();
-
-        try (FileWriter writer = new FileWriter(filePath)) {
-            for (Task task : currentTaskList) {
-                writer.write(task.getDescription() + ";" + task.getDeadline() + ";" + task.getTime() + ";" + task.isCompleted() + "\n");
-            }
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
-
+        saveDataToFile();
         System.exit(0);
+    }
+
+    private void saveDataToFile() {
+        ObservableList<Task> tasks = taskList.getItems();
+        try (FileWriter writer = new FileWriter(filePath)) {
+            for (Task task : tasks) {
+                writer.write(task.getDescription() + ";" +
+                        (task.getDeadline() != null ? task.getDeadline().toString() : "null") + ";" +
+                        (task.getTime() != null ? task.getTime().toString() : "null") + ";" +
+                        task.isCompleted() + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sortTasks() {
@@ -188,5 +153,4 @@ public class Controller implements Initializable {
         }
         FXCollections.sort(tasks, comparator);
     }
-
 }
