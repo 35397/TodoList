@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<AnchorPane prefHeight="480.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.todolistjavafx.Controller">
+   <children>
+      <VBox layoutX="50.0" layoutY="20.0" prefHeight="440.0" prefWidth="220.0" spacing="10.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="20.0">
+         <padding>
+            <Insets/>
+         </padding>
+         <children>
+            <Label text="To-Do List" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+            <ListView fx:id="taskList" prefHeight="300.0" prefWidth="200.0" />
+            <HBox spacing="10.0">
+               <TextField fx:id="newTask" promptText="New Task" prefWidth="150.0" />
+               <DatePicker fx:id="deadlinePicker" promptText="Deadline" prefWidth="120.0" />
+               <Button mnemonicParsing="false" onAction="#addNewTask" text="Add" style="-fx-base: #2196F3; -fx-text-fill: white;" />
+            </HBox>
+            <HBox spacing="10.0">
+               <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteTask" text="Delete" style="-fx-base: #F44336; -fx-text-fill: white;" />
+               <Button mnemonicParsing="false" onAction="#markTaskCompleted" text="Complete" style="-fx-base: #4CAF50; -fx-text-fill: white;" />
+               <Button mnemonicParsing="false" onAction="#exitProgram" text="Exit" style="-fx-base: #607D8B; -fx-text-fill: white;" />
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
